@@ -2,44 +2,69 @@ schema: '2.0'
 stages:
   preprocess:
     cmd: python src/preprocess.py
+    deps:
+    - path: data/raw.csv
+      hash: md5
+      md5: c13802044748773e03486b5d349d0dcc
+      size: 3610978
+    - path: params.yaml
+      hash: md5
+      md5: 4564f782f7c34e0c076dd280cb001e34
+      size: 373
+    - path: src/preprocess.py
+      hash: md5
+      md5: 1c1f0d28606e7a2e9cf4ec4daf9c0bc2
+      size: 2028
     outs:
     - path: data/processed/test.csv
       hash: md5
-      md5: faf9e1590be5bdae299cf219b4d7f02b
-      size: 2134963
+      md5: 512cb2123f737338498394f2ac1d2cfa
+      size: 1541142
     - path: data/processed/train.csv
       hash: md5
-      md5: 71cb934bf6469a755657495568942764
-      size: 8541643
+      md5: 3f85e164c1c3b7669929b8524fa47e19
+      size: 6165762
   train:
     cmd: python src/train.py
     deps:
     - path: data/processed/train.csv
       hash: md5
-      md5: 71cb934bf6469a755657495568942764
-      size: 8541643
+      md5: 3f85e164c1c3b7669929b8524fa47e19
+      size: 6165762
+    - path: params.yaml
+      hash: md5
+      md5: 4564f782f7c34e0c076dd280cb001e34
+      size: 373
     - path: src/train.py
       hash: md5
-      md5: e6a29bfa0415f36e73855e5dd4b88972
-      size: 1145
+      md5: dc14d3b53d44f807664279bdc2d4037b
+      size: 790
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: 5a8c0c01f48a63afb852a7cd627fe4b2
-      size: 6623865
+      md5: 289830102dc02cc1aca51564e86cb7ff
+      size: 13931449
   evaluate:
-    cmd: python src/test.py
+    cmd: python src/evaluate.py
     deps:
     - path: data/processed/test.csv
       hash: md5
-      md5: faf9e1590be5bdae299cf219b4d7f02b
-      size: 2134963
+      md5: 512cb2123f737338498394f2ac1d2cfa
+      size: 1541142
     - path: models/model.pkl
       hash: md5
-      md5: 5a8c0c01f48a63afb852a7cd627fe4b2
-      size: 6623865
+      md5: 289830102dc02cc1aca51564e86cb7ff
+      size: 13931449
+    - path: src/evaluate.py
+      hash: md5
+      md5: f8aab9aadd4a4ab8dfe3281d7e4ee8c4
+      size: 1990
     outs:
     - path: experiments/results.json
       hash: md5
-      md5: 0f4900ba0ca313d9b68dca6f8c8ef294
-      size: 496
+      md5: 97d1d72eab72f0db776d9b51fd50fa18
+      size: 239
+    - path: metrics.json
+      hash: md5
+      md5: 74b22d25c169bf56843a5a8495dd8e63
+      size: 103
