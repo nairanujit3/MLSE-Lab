@@ -1,66 +1,63 @@
 import pandas as pd
 import yaml
 import os
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-# ======================
-# Load Config
-# ======================
-with open("params.yaml", "r") as f:
-    config = yaml.safe_load(f)
+def load_config(config_path="params.yaml"):
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
 
-# ======================
-# Load Raw Data
-# ======================
-df = pd.read_csv(config["dataset"])
+def main():
+    config = load_config()
 
-# 'loan_status' is the target column
-target_col = "loan_status"
-X = df.drop(columns=[target_col])
-y = df[target_col]
+    raw_data_path = config["data"]["raw"]
+    train_path = config["data"]["train"]
+    test_path = config["data"]["test"]
+    target_col = config["data"]["target_col"]
 
-# ======================
-# Identify Columns
-# ======================
-categorical_cols = X.select_dtypes(include=["object"]).columns.tolist()
-numerical_cols = X.select_dtypes(include=["int64", "float64"]).columns.tolist()
+    test_size = config["training"]["test_size"]
+    random_state = config["training"]["random_state"]
 
-transformers = []
-if config["preprocessing"].get("scale", False) and numerical_cols:
-    transformers.append(("num", StandardScaler(), numerical_cols))
+    
+    df = pd.read_csv(raw_data_path)
 
-if config["preprocessing"].get("encode", False) and categorical_cols:
-    transformers.append(("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols))
+    if target_col not in df.columns:
+        raise KeyError(f"Target column '{target_col}' not found in dataset. "
+                       f"Available columns: {list(df.columns)}")
+    X = df.drop(columns=[target_col])
+    y = df[target_col]
 
-if not transformers:
-    X_processed = X.copy()
-else:
-    preprocessor = ColumnTransformer(transformers=transformers)
-    X_processed = preprocessor.fit_transform(X)
+    
+    if config["preprocessing"]["scale"]:
+        scaler = StandardScaler()
+        X[X.select_dtypes(include=["number"]).columns] = scaler.fit_transform(
+            X.select_dtypes(include=["number"])
+        )
 
-    # Convert back to DataFrame with reset index
-    if hasattr(X_processed, "toarray"):
-        X_processed = X_processed.toarray()
-    X_processed = pd.DataFrame(X_processed, index=X.index)
+    if config["preprocessing"]["encode"]:
+        encoder = LabelEncoder()
+        for col in X.select_dtypes(include=["object"]).columns:
+            X[col] = encoder.fit_transform(X[col])
 
+    df_processed = pd.concat([X, y], axis=1)
+    
+    train_df, test_df = train_test_split(
+        df_processed,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y
+    )
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X_processed, y,
-    test_size=config["training"]["test_size"],
-    random_state=config["training"]["random_state"]
-)
+   
+    os.makedirs(os.path.dirname(train_path), exist_ok=True)
 
-# Reset indices to avoid misalignment
-train_df = pd.concat([pd.DataFrame(X_train).reset_index(drop=True),
-                      y_train.reset_index(drop=True)], axis=1)
-test_df = pd.concat([pd.DataFrame(X_test).reset_index(drop=True),
-                     y_test.reset_index(drop=True)], axis=1)
+    
+    train_df.to_csv(train_path, index=False)
+    test_df.to_csv(test_path, index=False)
 
+    print(f"✅ Train data saved at: {train_path}")
+    print(f"✅ Test data saved at: {test_path}")
 
-os.makedirs("data/processed", exist_ok=True)
-train_df.to_csv("data/processed/train.csv", index=False)
-test_df.to_csv("data/processed/test.csv", index=False)
-
-print("Preprocessing complete: train/test saved to data/processed/")
+if __name__ == "__main__":
+    main()

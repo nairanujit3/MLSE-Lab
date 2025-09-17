@@ -9,8 +9,8 @@ stages:
       size: 3610978
     - path: params.yaml
       hash: md5
-      md5: 3baa1740637b658b05ef083554eca634
-      size: 373
+      md5: d8f7795c3a511c0714d79ac3136c6e6d
+      size: 374
     - path: src/preprocess.py
       hash: md5
       md5: 1c1f0d28606e7a2e9cf4ec4daf9c0bc2
@@ -33,8 +33,8 @@ stages:
       size: 6165762
     - path: params.yaml
       hash: md5
-      md5: 3baa1740637b658b05ef083554eca634
-      size: 373
+      md5: d8f7795c3a511c0714d79ac3136c6e6d
+      size: 374
     - path: src/train.py
       hash: md5
       md5: dc14d3b53d44f807664279bdc2d4037b
@@ -42,8 +42,8 @@ stages:
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: bd9ee49ace4f421b32ddfd2e406ae00e
-      size: 9205771
+      md5: bf243fe343724133aecca524cc997e50
+      size: 332080385
   evaluate:
     cmd: python src/evaluate.py
     deps:

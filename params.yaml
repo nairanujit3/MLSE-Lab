@@ -1,16 +1,21 @@
-dataset: data/loan_data.csv
+data:
+  raw: data/raw.csv
+  processed: data/processed.csv
+  train: data/processed/train.csv
+  test: data/processed/test.csv
+  target_col: loan_status
 
 preprocessing:
-  scale: True
-  encode: True
-
+  scale: true
+  encode: true
 model:
   type: RandomForestClassifier
   params:
-    n_estimators: 150
-    max_depth: 10
+    n_estimators: 1000
+    max_depth: 20
     random_state: 42
-
 training:
   test_size: 0.2
   random_state: 42
+
+

@@ -25,7 +25,14 @@ stages:
       - models/model.pkl
       - data/processed/test.csv
     outs:
-      - experiments/results.json
+      - experiments/results.json:
+          persist: True
     metrics:
       - metrics.json
+
+plots:
+  - experiments/results.json:
+     x: n_estimators
+     y: accuracy
+     title: "Random Forest: Accuracy vs n_estimators"
 

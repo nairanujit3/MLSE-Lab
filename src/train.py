@@ -1,36 +1,26 @@
 import pandas as pd
 import yaml
-import joblib
-import os
+import pickle
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
+from pathlib import Path
 
-# Load Config
-with open("params.yaml", "r") as f:
-    config = yaml.safe_load(f)
+def load_config(config_path='params.yaml'):
+    with open(config_path, 'r') as file:
+        return yaml.safe_load(file)
 
-# Load Training Data
-df = pd.read_csv("data/processed/train.csv")
+def train_model(config):
+    train_df = pd.read_csv('data/processed/train.csv')
+    X_train = train_df.drop(train_df.columns[-1], axis=1)
+    y_train = train_df[train_df.columns[-1]].astype(int)
 
-# Last column is assumed to be target ("loan_status")
-X_train = df.iloc[:, :-1]
-y_train = df.iloc[:, -1]
+    model_params = config['model']['params']
+    model = RandomForestClassifier(**model_params)
+    model.fit(X_train, y_train)
 
-# Model Selection
-if config["model"]["type"] == "RandomForestClassifier":
-    model = RandomForestClassifier(**config["model"]["params"])
-elif config["model"]["type"] == "LogisticRegression":
-    model = LogisticRegression(**config["model"]["params"])
-elif config["model"]["type"] == "DecisionTreeClassifier":
-    model = DecisionTreeClassifier(**config["model"]["params"])
-else:
-    raise ValueError(f"Unsupported model type: {config['model']['type']}")
+    Path('models').mkdir(exist_ok=True)
+    with open('models/model.pkl', 'wb') as f:
+        pickle.dump(model, f)
 
-# Train Model
-model.fit(X_train, y_train)
-
-# Save Model
-os.makedirs("models", exist_ok=True)
-joblib.dump(model, "models/model.pkl")
-print("✅ Model trained and saved at models/model.pkl")
+if __name__ == "__main__":
+    config = load_config()
+    train_model(config)
